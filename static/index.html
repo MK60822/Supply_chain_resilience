@@ -1,0 +1,2960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supply Chain Resilience Control Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            /* Light theme default colors */
+            --bg-base: #f1f5f9;
+            --bg-surface: #ffffff;
+            --bg-card: #ffffff;
+            --bg-card-hover: #f8fafc;
+            --border-glow: rgba(14, 165, 233, 0.12);
+            --border-faint: rgba(15, 23, 42, 0.06);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            
+            --bg-sidebar: #f8fafc;
+            --bg-sidebar-card: #ffffff;
+            --bg-input: #ffffff;
+            --bg-node-card: #ffffff;
+            --bg-node-icon: #f1f5f9;
+            --bg-header-bar: #f8fafc;
+            --bg-metric-tile: #f8fafc;
+            --bg-tab-content: #ffffff;
+            --border-input: rgba(15, 23, 42, 0.1);
+            
+            --color-primary: #0284c7;
+            --color-primary-glow: rgba(2, 132, 199, 0.1);
+            --color-secondary: #0d9488;
+            --color-success: #10b981;
+            --color-warning: #ea580c;
+            --color-danger: #ef4444;
+            --color-indigo: #4f46e5;
+            
+            --font-main: 'Plus Jakarta Sans', sans-serif;
+            --sidebar-width: 360px;
+            
+            --bg-gradient: 
+                radial-gradient(circle at 0% 0%, rgba(2, 132, 199, 0.04) 0, transparent 40%),
+                radial-gradient(circle at 100% 100%, rgba(79, 70, 229, 0.04) 0, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(13, 148, 136, 0.01) 0, transparent 60%);
+        }
+
+        .dark-theme {
+            /* Dark theme colors */
+            --bg-base: #030712;
+            --bg-surface: #0b1329;
+            --bg-card: rgba(15, 23, 42, 0.65);
+            --bg-card-hover: rgba(15, 23, 42, 0.8);
+            --border-glow: rgba(56, 189, 248, 0.15);
+            --border-faint: rgba(255, 255, 255, 0.06);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            
+            --bg-sidebar: rgba(11, 19, 41, 0.85);
+            --bg-sidebar-card: rgba(15, 23, 42, 0.4);
+            --bg-input: rgba(15, 23, 42, 0.6);
+            --bg-node-card: rgba(15, 23, 42, 0.4);
+            --bg-node-icon: rgba(255, 255, 255, 0.05);
+            --bg-header-bar: rgba(11, 19, 41, 0.5);
+            --bg-metric-tile: rgba(255, 255, 255, 0.02);
+            --bg-tab-content: rgba(15, 23, 42, 0.3);
+            --border-input: rgba(255, 255, 255, 0.1);
+            
+            --color-primary: #0ea5e9;
+            --color-primary-glow: rgba(14, 165, 233, 0.15);
+            --color-secondary: #14b8a6;
+            --color-success: #10b981;
+            --color-warning: #f59e0b;
+            --color-danger: #ef4444;
+            --color-indigo: #6366f1;
+            
+            --bg-gradient: 
+                radial-gradient(circle at 0% 0%, rgba(14, 165, 233, 0.08) 0, transparent 40%),
+                radial-gradient(circle at 100% 100%, rgba(99, 102, 241, 0.08) 0, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(20, 184, 166, 0.03) 0, transparent 60%);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            background-image: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            overflow-x: hidden;
+            display: flex;
+            height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* App Layout */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border-faint);
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            flex-shrink: 0;
+            z-index: 10;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        /* Sidebar Elements */
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-faint);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-header h1 {
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .sidebar-scrollable {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-card {
+            background: var(--bg-sidebar-card);
+            border: 1px solid var(--border-faint);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        input[type="text"], input[type="password"], textarea, select {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border-input);
+            border-radius: 10px;
+            color: var(--text-primary);
+            padding: 10px 12px 10px 38px;
+            font-family: var(--font-main);
+            font-size: 13px;
+            transition: all 0.2s, background-color 0.3s, border-color 0.3s;
+        }
+
+        textarea {
+            padding: 10px 12px;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px var(--color-primary-glow);
+        }
+
+        .key-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .key-toggle:hover {
+            color: var(--text-primary);
+        }
+
+        /* Buttons & Badges */
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            font-family: var(--font-main);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0284c7, #0f766e);
+            color: white;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(2, 132, 199, 0.3);
+        }
+
+        .btn-primary:disabled {
+            background: var(--text-muted);
+            transform: none;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: var(--bg-node-icon);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-faint);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-sidebar);
+            color: var(--text-primary);
+        }
+
+        .badge-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .scenario-btn {
+            background: var(--bg-sidebar-card);
+            border: 1px solid var(--border-faint);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .scenario-btn:hover {
+            background: rgba(14, 165, 233, 0.1);
+            border-color: rgba(14, 165, 233, 0.3);
+            color: var(--text-primary);
+        }
+
+        /* Top Nav */
+        .top-nav {
+            padding: 20px 40px;
+            border-bottom: 1px solid var(--border-faint);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-surface);
+            backdrop-filter: blur(8px);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .nav-status {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--color-success);
+            box-shadow: 0 0 8px var(--color-success);
+        }
+
+        .dot.running {
+            background-color: var(--color-warning);
+            box-shadow: 0 0 8px var(--color-warning);
+            animation: pulse 1.5s infinite alternate;
+        }
+
+        .dot.error {
+            background-color: var(--color-danger);
+            box-shadow: 0 0 8px var(--color-danger);
+        }
+
+        /* Dashboard Content Workspace */
+        .workspace {
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        /* Pipeline Visual Track */
+        .pipeline-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glow);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(16px);
+        }
+
+        .pipeline-track {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px 20px;
+            position: relative;
+        }
+
+        @media (max-width: 1024px) {
+            .pipeline-track {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Global premium scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.3);
+            border-radius: 9999px;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(156, 163, 175, 0.5);
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+
+        /* Premium active pulse keyframe for nodes */
+        @keyframes active-pulse-cyan-indigo {
+            0% {
+                border-color: #0ea5e9;
+                box-shadow: 0 0 8px rgba(14, 165, 233, 0.4), inset 0 0 4px rgba(14, 165, 233, 0.2);
+            }
+            100% {
+                border-color: #6366f1;
+                box-shadow: 0 0 20px rgba(99, 102, 241, 0.6), inset 0 0 10px rgba(99, 102, 241, 0.3);
+            }
+        }
+        @keyframes pulse-line {
+            0% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .node-card {
+            background: var(--bg-node-card);
+            border: 1px solid var(--border-faint);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s, border-color 0.3s;
+            cursor: pointer;
+        }
+
+        .node-card:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            border-color: var(--border-input);
+        }
+
+        .node-card.active {
+            animation: active-pulse-cyan-indigo 1.5s infinite alternate;
+            transform: scale(1.03);
+            z-index: 2;
+        }
+
+        .node-card.success {
+            border: 1.5px solid transparent;
+            background-image: linear-gradient(var(--bg-node-card), var(--bg-node-card)), linear-gradient(135deg, #10b981, #059669);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.08);
+        }
+
+        .node-card.failed {
+            border: 1.5px solid transparent;
+            background-image: linear-gradient(var(--bg-node-card), var(--bg-node-card)), linear-gradient(135deg, #ef4444, #dc2626);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.08);
+        }
+
+        /* Flow Map Layout Styling */
+        .pipeline-track.flow-map-mode {
+            display: flex;
+            flex-direction: row;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 24px 10px;
+            gap: 48px;
+            min-height: 200px;
+            scrollbar-width: thin;
+        }
+        .pipeline-track.flow-map-mode::-webkit-scrollbar {
+            height: 6px;
+        }
+        .pipeline-track.flow-map-mode::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.3);
+            border-radius: 3px;
+        }
+        .pipeline-track.flow-map-mode .node-card {
+            width: 240px;
+            flex-shrink: 0;
+        }
+        .pipeline-track.flow-map-mode .node-card::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -34px;
+            width: 20px;
+            height: 2px;
+            background: var(--border-faint);
+            transform: translateY(-50%);
+            transition: all 0.3s ease;
+        }
+        .pipeline-track.flow-map-mode .node-card.success::after {
+            background: var(--color-success);
+            box-shadow: 0 0 8px var(--color-success);
+        }
+        .pipeline-track.flow-map-mode .node-card.active::after {
+            background: var(--color-primary);
+            box-shadow: 0 0 8px var(--color-primary);
+            animation: pulse-line 1.5s infinite alternate;
+        }
+        .pipeline-track.flow-map-mode .node-card:last-child::after {
+            display: none;
+        }
+
+        /* Stats bar card styling */
+        .stats-bar-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glow);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            backdrop-filter: blur(16px);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            animation: slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transition: all 0.3s ease;
+        }
+        
+        .stats-bar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .progress-container-bar {
+            height: 8px;
+            background: var(--bg-metric-tile);
+            border-radius: 999px;
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0ea5e9, #6366f1, #10b981);
+            border-radius: 999px;
+            width: 0%;
+            transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .stats-tiles-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        
+        .stats-tile-item {
+            background: var(--bg-metric-tile);
+            border: 1px solid var(--border-faint);
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .stats-tile-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+        
+        .stats-tile-val {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* Mac-style JSON Terminal Window */
+        .raw-json-view-container {
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-faint);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+            background: #0d1117;
+            margin-top: 10px;
+        }
+
+        .terminal-header-bar {
+            background: #161b22;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .terminal-btn {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .close-btn { background: #ff5f56; }
+        .minimize-btn { background: #ffbd2e; }
+        .expand-btn { background: #27c93f; }
+
+        .terminal-title {
+            margin-left: 8px;
+            font-family: var(--font-main);
+            font-size: 11.5px;
+            color: #8b949e;
+            font-weight: 600;
+        }
+
+        .raw-json-view-code {
+            padding: 16px;
+            overflow-x: auto;
+            max-height: 350px;
+            margin: 0;
+            background: #0d1117;
+        }
+
+        .raw-json-view-code code {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            display: block;
+        }
+
+        /* JSON Token Highlighting classes */
+        .json-key { color: #ff7b72; font-weight: 600; }     /* orange/red key */
+        .json-string { color: #a5d6ff; }                  /* light blue string */
+        .json-number { color: #d2a8ff; }                  /* purple number */
+        .json-boolean { color: #ff9b5e; font-weight: 600; } /* orange boolean */
+        .json-null { color: #79c0ff; font-style: italic; }
+
+        .node-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .node-title-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .node-icon-bg {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: var(--bg-node-icon);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .node-card.active .node-icon-bg {
+            background: var(--color-primary-glow);
+            color: var(--color-primary);
+        }
+
+        .node-card.success .node-icon-bg {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--color-success);
+        }
+
+        .node-card.failed .node-icon-bg {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--color-danger);
+        }
+
+        .node-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .node-step-num {
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .node-desc {
+            font-size: 11px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .node-status {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            width: fit-content;
+        }
+
+        .status-pending { background: rgba(255, 255, 255, 0.05); color: var(--text-muted); }
+        .status-running { background: rgba(245, 158, 11, 0.1); color: var(--color-warning); animation: pulse 1s infinite alternate; }
+        .status-success { background: rgba(16, 185, 129, 0.1); color: var(--color-success); }
+        .status-failed { background: rgba(239, 68, 68, 0.1); color: var(--color-danger); }
+
+        /* Output View Section */
+        .output-feed-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .output-feed-title {
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feed-container {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .agent-output-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-faint);
+            border-radius: 20px;
+            overflow: hidden;
+            display: none; /* Shown dynamically */
+            animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .agent-output-card.visible {
+            display: block;
+        }
+
+        .card-header-bar {
+            padding: 16px 24px;
+            background: var(--bg-header-bar);
+            border-bottom: 1px solid var(--border-faint);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .card-title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background: var(--color-primary-glow);
+            color: var(--color-primary);
+            border: 1px solid rgba(14, 165, 233, 0.2);
+        }
+
+        .card-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .view-toggle-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .view-toggle-btn:hover {
+            color: var(--text-primary);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .card-body {
+            padding: 24px;
+        }
+
+        .raw-json-view {
+            background: #010409;
+            color: #85e89d;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
+            padding: 16px;
+            border-radius: 12px;
+            overflow-x: auto;
+            max-height: 300px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: none;
+        }
+
+        .raw-json-view.active {
+            display: block;
+        }
+
+        .formatted-view {
+            display: block;
+        }
+
+        .formatted-view.hidden {
+            display: none;
+        }
+
+        /* Custom Widgets inside agent cards */
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .metric-tile {
+            background: var(--bg-metric-tile);
+            border: 1px solid var(--border-faint);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-val {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .metric-val.alert-red { color: var(--color-danger); }
+        .metric-val.alert-orange { color: var(--color-warning); }
+        .metric-val.alert-green { color: var(--color-success); }
+
+        .widget-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 13px;
+        }
+
+        .widget-table th {
+            text-align: left;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-secondary);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-faint);
+        }
+
+        .widget-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-faint);
+            color: var(--text-primary);
+        }
+
+        .widget-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Cost Range Widget */
+        .cost-range-bar-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .cost-range-label-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .range-slider-bar {
+            height: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .range-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-primary), var(--color-indigo));
+            border-radius: 6px;
+            position: absolute;
+        }
+
+        .range-markers {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        /* Tabbed Alerts (Stakeholder Notifier) */
+        .tab-menu {
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid var(--border-faint);
+            padding-bottom: 1px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-weight: 600;
+            padding: 10px 16px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            font-size: 13px;
+            font-family: var(--font-main);
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            color: var(--color-primary);
+            border-color: var(--color-primary);
+        }
+
+        .tab-content {
+            display: none;
+            background: var(--bg-tab-content);
+            border: 1px solid var(--border-faint);
+            border-radius: 12px;
+            padding: 20px;
+            line-height: 1.6;
+            font-size: 13.5px;
+            color: var(--text-primary);
+            position: relative;
+            transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-secondary);
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-primary);
+        }
+
+        /* Checklists */
+        .checklist {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 13px;
+        }
+
+        .checklist-checkbox {
+            margin-top: 3px;
+            accent-color: var(--color-primary);
+        }
+
+        /* Risk score indicator visual */
+        .risk-gauge-container {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .risk-gauge {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 8px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .risk-gauge-val {
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .risk-gauge.high { border-color: rgba(239, 68, 68, 0.2); border-top-color: var(--color-danger); border-right-color: var(--color-danger); }
+        .risk-gauge.med { border-color: rgba(245, 158, 11, 0.2); border-top-color: var(--color-warning); border-right-color: var(--color-warning); }
+        .risk-gauge.low { border-color: rgba(16, 185, 129, 0.2); border-top-color: var(--color-success); border-right-color: var(--color-success); }
+
+        /* Animation */
+        @keyframes pulse {
+            0% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+            border: 2px dashed var(--border-faint);
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .no-data i {
+            font-size: 32px;
+        }
+
+        /* Collapse / Settings bar toggle */
+        .api-badge {
+            font-size: 11px;
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--color-success);
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            font-weight: 600;
+        }
+
+        .api-badge.missing {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--color-danger);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="node-icon-bg" style="background: var(--color-primary-glow); color: var(--color-primary);">
+                <i data-lucide="shield-alert"></i>
+            </div>
+            <div>
+                <h1>Supply Chain Resilience</h1>
+                <p style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Multi-Agent Control System</p>
+            </div>
+        </div>
+
+        <div class="sidebar-scrollable">
+            <!-- Settings Card -->
+            <div class="sidebar-card">
+                <div class="section-title">
+                    <i data-lucide="settings" style="width: 14px;"></i> API Setup
+                </div>
+                
+                <div class="form-group">
+                    <label for="groq-key-input">Groq API Key</label>
+                    <div class="input-wrapper">
+                        <i data-lucide="key"></i>
+                        <input type="password" id="groq-key-input" placeholder="gsk_...">
+                        <button class="key-toggle" onclick="toggleKeyVisibility('groq-key-input')">
+                            <i data-lucide="eye" style="width: 14px;"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="gemini-key-input">Gemini API Key</label>
+                    <div class="input-wrapper">
+                        <i data-lucide="key"></i>
+                        <input type="password" id="gemini-key-input" placeholder="AIzaSy...">
+                        <button class="key-toggle" onclick="toggleKeyVisibility('gemini-key-input')">
+                            <i data-lucide="eye" style="width: 14px;"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pre-configured Scenarios -->
+            <div class="sidebar-card">
+                <div class="section-title">
+                    <i data-lucide="zap" style="width: 14px;"></i> Test Scenarios
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <button class="scenario-btn" onclick="loadScenario('storm')">
+                        <i data-lucide="cloud-lightning" style="width: 14px; color: var(--color-primary);"></i>
+                        Gulf Coast Weather Disruption
+                    </button>
+                    <button class="scenario-btn" onclick="loadScenario('sanctions')">
+                        <i data-lucide="alert-octagon" style="width: 14px; color: var(--color-warning);"></i>
+                        East Asia Compliance Sanction
+                    </button>
+                    <button class="scenario-btn" onclick="loadScenario('canal')">
+                        <i data-lucide="anchor" style="width: 14px; color: var(--color-indigo);"></i>
+                        Suez Canal Transit Delay
+                    </button>
+                </div>
+            </div>
+
+            <!-- Inputs Card -->
+            <div class="sidebar-card" style="flex-grow: 1; display: flex; flex-direction: column;">
+                <div class="section-title">
+                    <i data-lucide="sliders" style="width: 14px;"></i> Parameters
+                </div>
+                <div class="form-group" style="flex-grow: 1; display: flex; flex-direction: column;">
+                    <label for="disruption-input">Disruption Description</label>
+                    <textarea id="disruption-input" style="flex-grow: 1;" placeholder="Describe the supply chain incident here in detail (e.g. suppliers affected, location, severity, incident type)..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="temp-slider">LLM Creativity (Temperature)</label>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <input type="range" id="temp-slider" min="0.0" max="1.0" step="0.1" value="0.3" style="flex-grow: 1; accent-color: var(--color-primary);">
+                        <span id="temp-val" style="font-size: 13px; font-weight: 600; min-width: 24px;">0.3</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 16px;">
+                    <button class="btn btn-primary" id="run-btn" onclick="startAnalysis()">
+                        <i data-lucide="play"></i> Analyze Supply Chain
+                    </button>
+                    <button class="btn btn-secondary" onclick="resetPipeline()">
+                        <i data-lucide="rotate-ccw"></i> Reset Control Board
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN BODY -->
+    <div class="main-content">
+        <!-- Top Nav -->
+        <div class="top-nav">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <h2 style="font-size: 18px; font-weight: 700;">Dashboard Panel</h2>
+                <div id="llm-key-badges" style="display: flex; gap: 8px;">
+                    <!-- Filled dynamically -->
+                </div>
+            </div>
+            <div class="nav-status">
+                <button id="theme-toggle-btn" class="view-toggle-btn" style="border: 1px solid var(--border-faint); padding: 8px; border-radius: 10px; color: var(--text-secondary);" onclick="toggleTheme()">
+                    <i data-lucide="moon" style="width: 16px; height: 16px;"></i>
+                </button>
+                <div class="status-indicator">
+                    <div class="dot" id="system-dot"></div>
+                    <span id="system-status-text">System Ready</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Workspace -->
+        <div class="workspace">
+            <!-- Live Progress Analytics Pill & Stats -->
+            <div class="stats-bar-card" id="progress-bar-card" style="display: none;">
+                <div class="stats-bar-header">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="activity" style="color: var(--color-primary); width: 18px; height: 18px;"></i>
+                        <span style="font-weight: 700; font-size: 14px;">Pipeline Orchestration Status</span>
+                    </div>
+                    <span class="api-badge" id="running-status-badge" style="background: rgba(2, 132, 199, 0.12); color: var(--color-primary); border-color: rgba(2, 132, 199, 0.2);">Idle</span>
+                </div>
+                <div class="progress-container-bar">
+                    <div class="progress-bar-fill" id="run-progress-bar-fill" style="width: 0%;"></div>
+                </div>
+                <div class="stats-tiles-row">
+                    <div class="stats-tile-item">
+                        <span class="stats-tile-label">Progress</span>
+                        <span class="stats-tile-val" id="stats-progress-text">0 / 20 completed</span>
+                    </div>
+                    <div class="stats-tile-item">
+                        <span class="stats-tile-label">Active Agent</span>
+                        <span class="stats-tile-val" id="stats-active-agent" style="color: var(--color-primary);">None</span>
+                    </div>
+                    <div class="stats-tile-item">
+                        <span class="stats-tile-label">Execution Time</span>
+                        <span class="stats-tile-val" id="stats-elapsed-time">0.0s</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pipeline Board Card -->
+            <div class="pipeline-card">
+                <div class="section-title" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="git-branch" style="width: 14px;"></i> Agent Pipeline Visualizer
+                    </span>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="view-toggle-btn active" id="layout-grid-btn" onclick="toggleLayout('grid')" style="border: 1px solid var(--border-faint); padding: 4px 8px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 4px; background: var(--bg-node-icon); color: var(--text-primary); cursor: pointer;">
+                            <i data-lucide="grid" style="width: 12px; height: 12px;"></i> Grid View
+                        </button>
+                        <button class="view-toggle-btn" id="layout-flow-btn" onclick="toggleLayout('flow')" style="border: 1px solid var(--border-faint); padding: 4px 8px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 4px; background: var(--bg-node-icon); color: var(--text-secondary); cursor: pointer;">
+                            <i data-lucide="git-commit" style="width: 12px; height: 12px;"></i> Flow Map
+                        </button>
+                    </div>
+                </div>
+                <div class="pipeline-track" id="pipeline-nodes">
+                    <!-- Nodes will be loaded by Javascript -->
+                </div>
+            </div>
+
+            <!-- Detailed Analysis Feed -->
+            <div>
+                <div class="output-feed-header">
+                    <h3 class="output-feed-title">
+                        <i data-lucide="terminal" style="color: var(--color-primary);"></i> Execution Log & Real-time Insights
+                    </h3>
+                </div>
+
+                <div class="feed-container" id="feed-container">
+                    <div class="no-data" id="empty-state">
+                        <i data-lucide="bar-chart-2"></i>
+                        <h4 style="font-weight: 600; color: var(--text-primary);">No Simulation Data Available</h4>
+                        <p style="font-size: 13px; max-width: 400px; line-height: 1.5;">Configure your API keys in the sidebar, input or select a disruption scenario, and click <b>Analyze Supply Chain</b> to launch the multi-agent orchestration pipeline.</p>
+                    </div>
+                    
+                    <!-- Agent Output Cards will render here dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Define all 20 agents
+        const AGENTS = [
+            { id: 'disruption_monitor', name: 'Disruption Detector', desc: 'Identifies & registers events.', icon: 'activity' },
+            { id: 'impact_analyser', name: 'Impact Assessor', desc: 'Assesses severity & ripple effects.', icon: 'alert-triangle' },
+            { id: 'cost_estimator', name: 'Cost Estimator', desc: 'Estimates dollar impact & ROI.', icon: 'dollar-sign' },
+            { id: 'geopolitical_risk_assessor', name: 'Geopolitical Assessor', desc: 'Evaluates geopolitical risks.', icon: 'globe' },
+            { id: 'supplier_risk_evaluator', name: 'Supplier Risk Evaluator', desc: 'Evaluates supplier risk metrics.', icon: 'users' },
+            { id: 'compliance_checker', name: 'Compliance Checker', desc: 'Flags regulatory & ESG risks.', icon: 'shield-check' },
+            { id: 'contract_risk_analyzer', name: 'Contract Analyzer', desc: 'Analyses supplier contracts.', icon: 'file-text' },
+            { id: 'insurance_claims_advisor', name: 'Insurance Claims Advisor', desc: 'Advises on insurance claims.', icon: 'umbrella' },
+            { id: 'demand_forecaster', name: 'Demand Forecaster', desc: 'Forecasts customer demand shifts.', icon: 'trending-up' },
+            { id: 'shortage_predictor', name: 'Shortage Predictor', desc: 'Forecasts material shortages.', icon: 'clock' },
+            { id: 'inventory_rebalancer', name: 'Inventory Rebalancer', desc: 'Coordinates warehouse transfers.', icon: 'package' },
+            { id: 'production_schedule_adjuster', name: 'Production Adjuster', desc: 'Adjusts production schedules.', icon: 'sliders' },
+            { id: 'logistics_route_optimizer', name: 'Route Optimizer', desc: 'Finds alternative routes.', icon: 'map' },
+            { id: 'financial_hedging_advisor', name: 'Hedging Advisor', desc: 'Hedging and currency advice.', icon: 'percent' },
+            { id: 'sustainability_assessor', name: 'Sustainability Assessor', desc: 'Evaluates carbon and ESG impact.', icon: 'leaf' },
+            { id: 'mitigation_recommender', name: 'Mitigation Recommender', desc: 'Recommends action strategies.', icon: 'lightbulb' },
+            { id: 'alt_supplier_finder', name: 'Alt Supplier Finder', desc: 'Finds backup supplier choices.', icon: 'search' },
+            { id: 'customer_communication', name: 'Customer Comm Specialist', desc: 'Drafts customer delay notices.', icon: 'message-square' },
+            { id: 'stakeholder_notifier', name: 'Stakeholder Notifier', desc: 'Drafts tailored memos.', icon: 'mail' },
+            { id: 'recovery_timeline_planner', name: 'Recovery Planner', desc: 'Creates master recovery plan.', icon: 'calendar' }
+        ];
+
+
+        // Scenario Templates
+        const SCENARIOS = {
+            storm: "A category 4 hurricane is projected to make landfall near Houston, Texas. Significant shipping disruptions are expected around the Gulf Coast port facilities. Primary chemical supplier 'ChemVantage Ltd.' operates an essential production unit in the zone, providing polymer resins for our primary manufacturing division. Heavy storm surges and localized grid shutdowns are expected to halt their operations for 2 to 3 weeks.",
+            sanctions: "A government regulatory body has announced trade embargoes on supplier 'Zenith Microchips Ltd.' located in Hsinchu, Taiwan, due to national security compliance issues. Zenith is our exclusive provider of high-grade microcontrollers for electric vehicle assemblies. The import restriction will freeze shipments starting next Monday, causing immediate supply chain bottlenecks.",
+            canal: "An oceanic container ship has run aground in the Suez Canal, completely blocking both northbound and southbound transits. Global maritime shipping times are estimated to rise by 14 days as freighters reroute around the Cape of Good Hope. Our primary supplier 'Atlas Logistics Co.' has 15 critical containers of assembly components currently stranded in the canal queue."
+        };
+
+        // Cache elements
+        const nodesContainer = document.getElementById('pipeline-nodes');
+        const feedContainer = document.getElementById('feed-container');
+        const emptyState = document.getElementById('empty-state');
+        const runBtn = document.getElementById('run-btn');
+        const tempSlider = document.getElementById('temp-slider');
+        const tempVal = document.getElementById('temp-val');
+        const systemDot = document.getElementById('system-dot');
+        const systemStatusText = document.getElementById('system-status-text');
+
+        // Local state
+        let pipelineData = {};
+        let isRunning = false;
+
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Temperature Slider listener
+        tempSlider.addEventListener('input', (e) => {
+            tempVal.textContent = e.target.value;
+        });
+
+        // Initialize Settings from LocalStorage
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedGroq = localStorage.getItem('groq_api_key') || '';
+            const savedGemini = localStorage.getItem('gemini_api_key') || '';
+            document.getElementById('groq-key-input').value = savedGroq;
+            document.getElementById('gemini-key-input').value = savedGemini;
+            
+            // Initialize theme UI
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            const btn = document.getElementById('theme-toggle-btn');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+                if (btn) btn.innerHTML = `<i data-lucide="sun" style="width: 16px; height: 16px;"></i>`;
+            } else {
+                if (btn) btn.innerHTML = `<i data-lucide="moon" style="width: 16px; height: 16px;"></i>`;
+            }
+            
+            updateKeyBadges();
+            renderPipelineNodes();
+        });
+
+        function toggleTheme() {
+            const isDark = document.body.classList.toggle('dark-theme');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            
+            const btn = document.getElementById('theme-toggle-btn');
+            if (btn) {
+                btn.innerHTML = `<i data-lucide="${isDark ? 'sun' : 'moon'}" style="width: 16px; height: 16px;"></i>`;
+            }
+            lucide.createIcons();
+        }
+
+        function toggleKeyVisibility(id) {
+            const input = document.getElementById(id);
+            if (input.type === 'password') {
+                input.type = 'text';
+            } else {
+                input.type = 'password';
+            }
+        }
+
+        function updateKeyBadges() {
+            const groqKey = document.getElementById('groq-key-input').value.trim();
+            const geminiKey = document.getElementById('gemini-key-input').value.trim();
+            
+            // Save to localStorage
+            localStorage.setItem('groq_api_key', groqKey);
+            localStorage.setItem('gemini_api_key', geminiKey);
+            
+            const badgeContainer = document.getElementById('llm-key-badges');
+            badgeContainer.innerHTML = '';
+
+            if (groqKey) {
+                badgeContainer.innerHTML += `<span class="api-badge">Groq Connected</span>`;
+            } else {
+                badgeContainer.innerHTML += `<span class="api-badge missing">Groq Key Missing</span>`;
+            }
+
+            if (geminiKey) {
+                badgeContainer.innerHTML += `<span class="api-badge">Gemini Connected</span>`;
+            } else {
+                badgeContainer.innerHTML += `<span class="api-badge missing">Gemini Key Missing</span>`;
+            }
+        }
+
+        // Add listeners to save keys immediately when changed
+        document.getElementById('groq-key-input').addEventListener('input', updateKeyBadges);
+        document.getElementById('gemini-key-input').addEventListener('input', updateKeyBadges);
+
+        function loadScenario(type) {
+            if (SCENARIOS[type]) {
+                document.getElementById('disruption-input').value = SCENARIOS[type];
+            }
+        }
+
+        // Render pipeline visualizer nodes
+        function renderPipelineNodes() {
+            nodesContainer.innerHTML = '';
+            AGENTS.forEach((agent, index) => {
+                const node = document.createElement('div');
+                node.className = `node-card`;
+                node.id = `node-${agent.id}`;
+                
+                node.innerHTML = `
+                    <div class="node-header">
+                        <div class="node-title-group">
+                            <div class="node-icon-bg">
+                                <i data-lucide="${agent.icon}" style="width: 16px; height: 16px;"></i>
+                            </div>
+                            <div>
+                                <div class="node-name">${agent.name}</div>
+                                <div class="node-step-num">Step ${String(index + 1).padStart(2, '0')}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="node-desc">${agent.desc}</div>
+                    <div class="node-status status-pending" id="status-badge-${agent.id}">Pending</div>
+                `;
+                nodesContainer.appendChild(node);
+            });
+            lucide.createIcons();
+        }
+
+        function setNodeState(agentId, state) {
+            const node = document.getElementById(`node-${agentId}`);
+            const badge = document.getElementById(`status-badge-${agentId}`);
+            if (!node || !badge) return;
+
+            node.className = 'node-card';
+            badge.className = 'node-status';
+
+            if (state === 'running') {
+                node.classList.add('active');
+                badge.classList.add('status-running');
+                badge.innerText = 'Analyzing';
+            } else if (state === 'success') {
+                node.classList.add('success');
+                badge.classList.add('status-success');
+                badge.innerText = 'Completed';
+            } else if (state === 'failed') {
+                node.classList.add('failed');
+                badge.classList.add('status-failed');
+                badge.innerText = 'Error';
+            } else {
+                badge.classList.add('status-pending');
+                badge.innerText = 'Pending';
+            }
+        }
+
+        function resetPipeline() {
+            if (isRunning) return;
+            pipelineData = {};
+            emptyState.style.display = 'flex';
+            
+            // Hide progress card
+            document.getElementById('progress-bar-card').style.display = 'none';
+
+            // Remove dynamically added cards
+            const cards = feedContainer.querySelectorAll('.agent-output-card');
+            cards.forEach(card => card.remove());
+
+            // Reset nodes
+            AGENTS.forEach(agent => setNodeState(agent.id, 'idle'));
+
+            systemDot.className = 'dot';
+            systemStatusText.innerText = 'System Ready';
+            runBtn.disabled = false;
+        }
+
+        // Layout Toggler
+        window.toggleLayout = function(type) {
+            const track = document.getElementById('pipeline-nodes');
+            const gridBtn = document.getElementById('layout-grid-btn');
+            const flowBtn = document.getElementById('layout-flow-btn');
+            
+            if (type === 'flow') {
+                track.classList.add('flow-map-mode');
+                gridBtn.classList.remove('active');
+                gridBtn.style.color = 'var(--text-secondary)';
+                flowBtn.classList.add('active');
+                flowBtn.style.color = 'var(--text-primary)';
+            } else {
+                track.classList.remove('flow-map-mode');
+                gridBtn.classList.add('active');
+                gridBtn.style.color = 'var(--text-primary)';
+                flowBtn.classList.remove('active');
+                flowBtn.style.color = 'var(--text-secondary)';
+            }
+            lucide.createIcons();
+        }
+
+        function toggleRawJson(agentId) {
+            const rawView = document.getElementById(`raw-${agentId}`);
+            const formattedView = document.getElementById(`formatted-${agentId}`);
+            const btn = document.getElementById(`toggle-btn-${agentId}`);
+            
+            if (rawView.style.display === 'block') {
+                rawView.style.display = 'none';
+                formattedView.classList.remove('hidden');
+                btn.innerHTML = `<i data-lucide="code" style="width: 14px;"></i> View JSON`;
+            } else {
+                rawView.style.display = 'block';
+                formattedView.classList.add('hidden');
+                btn.innerHTML = `<i data-lucide="eye" style="width: 14px;"></i> View UI`;
+            }
+            lucide.createIcons();
+        }
+
+        function highlightJson(jsonObj) {
+            const str = JSON.stringify(jsonObj, null, 2);
+            const escaped = str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return escaped.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g, function (match) {
+                let cls = 'json-number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'json-key';
+                    } else {
+                        cls = 'json-string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'json-boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'json-null';
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            });
+        }
+
+        function formatUsd(val) {
+            if (!val) return 'N/A';
+            if (typeof val === 'number') {
+                return '$' + val.toLocaleString();
+            }
+            return '$' + val;
+        }
+
+        // Beautiful custom renderers for each agent type
+        const RENDERERS = {
+            disruption_monitor: (data) => {
+                const affected = data.affected_suppliers ? 
+                    (Array.isArray(data.affected_suppliers) ? data.affected_suppliers.join(', ') : data.affected_suppliers) : 'N/A';
+                return `
+                    <div class="metric-grid">
+                        <div class="metric-tile">
+                            <span class="metric-label">Disruption Type</span>
+                            <span class="metric-val" style="color: var(--color-warning);">${data.disruption_type || 'Unknown'}</span>
+                        </div>
+                        <div class="metric-tile">
+                            <span class="metric-label">Incident Location</span>
+                            <span class="metric-val">${data.location || 'Unknown'}</span>
+                        </div>
+                        <div class="metric-tile">
+                            <span class="metric-label">Affected Suppliers</span>
+                            <span class="metric-val" style="font-size: 15px; font-weight:600;">${affected}</span>
+                        </div>
+                    </div>
+                    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-faint); border-radius: 12px; padding: 16px;">
+                        <h5 style="margin-bottom: 8px; font-size: 13px; font-weight: 700; color: var(--text-secondary);">Incident Intel Summary:</h5>
+                        <p style="font-size: 13px; line-height: 1.5; color: var(--text-primary);">${data.summary || data.description || 'Details registered successfully. Monitoring active status.'}</p>
+                    </div>
+                `;
+            },
+            impact_analyser: (data) => {
+                const severity = (data.severity || 'Medium').toUpperCase();
+                let sevClass = 'alert-orange';
+                let gaugeClass = 'med';
+                if (severity.includes('HIGH') || severity.includes('CRITICAL')) {
+                    sevClass = 'alert-red';
+                    gaugeClass = 'high';
+                } else if (severity.includes('LOW')) {
+                    sevClass = 'alert-green';
+                    gaugeClass = 'low';
+                }
+
+                return `
+                    <div class="metric-grid">
+                        <div class="metric-tile" style="flex-direction: row; justify-content: space-between; align-items: center;">
+                            <div>
+                                <span class="metric-label">Impact Severity</span>
+                                <span class="metric-val ${sevClass}">${data.severity || 'Medium'}</span>
+                            </div>
+                            <div class="risk-gauge ${gaugeClass}">
+                                <span class="risk-gauge-val">${severity.charAt(0)}</span>
+                            </div>
+                        </div>
+                        <div class="metric-tile">
+                            <span class="metric-label">Estimated Downtime</span>
+                            <span class="metric-val">${data.estimated_downtime || data.downtime || 'TBD'}</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-faint); border-radius: 12px; padding: 16px;">
+                            <h5 style="margin-bottom: 6px; font-size: 13px; font-weight: 700; color: var(--text-secondary);">Downstream Ripple Effects:</h5>
+                            <p style="font-size: 13px; line-height: 1.5;">${data.ripple_effects || data.downstream_impact || 'Multiple nodes flagged for propagation checks.'}</p>
+                        </div>
+                        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-faint); border-radius: 12px; padding: 16px;">
+                            <h5 style="margin-bottom: 6px; font-size: 13px; font-weight: 700; color: var(--text-secondary);">Analysis Insights:</h5>
+                            <p style="font-size: 13px; line-height: 1.5;">${data.summary || data.analysis || 'Impact assessment completed.'}</p>
+                        </div>
+                    </div>
+                `;
+            },
+            cost_estimator: (data) => {
+                const dir = data.estimated_direct_cost_usd || {};
+                const indir = data.estimated_indirect_cost_usd || {};
+                const total = data.total_estimated_impact_usd || {};
+                
+                return `
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 20px;">
+                        <div>
+                            <h5 style="font-size: 12px; font-weight:700; color:var(--text-secondary); margin-bottom:12px; text-transform:uppercase;">Cost Range Metrics (USD)</h5>
+                            
+                            <!-- Direct Cost Range -->
+                            <div class="cost-range-bar-container">
+                                <div class="cost-range-label-row">
+                                    <span>Direct Costs</span>
+                                    <span>Mid: ${formatUsd(dir.mid)}</span>
+                                </div>
+                                <div class="range-slider-bar">
+                                    <div class="range-fill" style="left: 10%; width: 60%;"></div>
+                                </div>
+                                <div class="range-markers">
+                                    <span>Low: ${formatUsd(dir.low)}</span>
+                                    <span>High: ${formatUsd(dir.high)}</span>
+                                </div>
+                            </div>
+
+                            <!-- Indirect Cost Range -->
+                            <div class="cost-range-bar-container">
+                                <div class="cost-range-label-row">
+                                    <span>Indirect Costs</span>
+                                    <span>Mid: ${formatUsd(indir.mid)}</span>
+                                </div>
+                                <div class="range-slider-bar">
+                                    <div class="range-fill" style="left: 20%; width: 50%; background: linear-gradient(90deg, var(--color-secondary), var(--color-indigo));"></div>
+                                </div>
+                                <div class="range-markers">
+                                    <span>Low: ${formatUsd(indir.low)}</span>
+                                    <span>High: ${formatUsd(indir.high)}</span>
+                                </div>
+                            </div>
+
+                            <!-- Total Impact Cost Range -->
+                            <div class="cost-range-bar-container" style="background: rgba(255,255,255,0.02); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.04);">
+                                <div class="cost-range-label-row">
+                                    <span style="color:var(--color-danger); font-weight:700;">Total Impact Cost</span>
+                                    <span style="color:var(--color-danger); font-weight:700;">Mid: ${formatUsd(total.mid)}</span>
+                                </div>
+                                <div class="range-slider-bar" style="height:14px;">
+                                    <div class="range-fill" style="left: 15%; width: 65%; background: linear-gradient(90deg, var(--color-danger), var(--color-warning));"></div>
+                                </div>
+                                <div class="range-markers">
+                                    <span>Low: ${formatUsd(total.low)}</span>
+                                    <span>High: ${formatUsd(total.high)}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h5 style="font-size: 12px; font-weight:700; color:var(--text-secondary); margin-bottom:12px; text-transform:uppercase;">Mitigation ROI Comparisons</h5>
+                            <div style="overflow-x: auto; max-height:230px;">
+                                <table class="widget-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Proposed Action</th>
+                                            <th>Cost</th>
+                                            <th>Savings</th>
+                                            <th>ROI %</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${(data.mitigation_roi || []).map(item => `
+                                            <tr>
+                                                <td style="font-weight: 500;">${item.action || 'TBD'}</td>
+                                                <td>${formatUsd(item.estimated_cost_usd)}</td>
+                                                <td>${formatUsd(item.expected_saving_usd)}</td>
+                                                <td style="color: var(--color-success); font-weight: 700;">${item.roi_percent}%</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-faint); border-radius: 12px; padding: 16px;">
+                        <h5 style="margin-bottom: 4px; font-size: 13px; font-weight: 700; color: var(--text-secondary);">Financial Summary:</h5>
+                        <p style="font-size: 13px; line-height: 1.5; color: var(--text-primary);">${data.summary || 'Economic valuation calculations complete.'}</p>
+                    </div>
+                `;
+            },
+            supplier_risk_evaluator: (data) => {
+                const score = data.risk_score || 50;
+                let riskColor = 'var(--color-warning)';
+                if (score > 70) riskColor = 'var(--color-danger)';
+                else if (score < 40) riskColor = 'var(--color-success)';
+
+                return `
+                    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 24px;">
+                        <div class="metric-tile" style="align-items: center; justify-content: center; text-align: center;">
+                            <span class="metric-label">Overall Supplier Risk Score</span>
+                            <div class="risk-gauge" style="border-width: 10px; width: 100px; height: 100px; border-color: rgba(255,255,255,0.05); border-top-color: ${riskColor}; border-right-color: ${riskColor};">
+                                <span class="risk-gauge-val" style="font-size: 24px; color: ${riskColor};">${score}/100</span>
+                            </div>
+                            <span style="font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-top: 8px;">Vulnerability Grade</span>
+                        </div>
+                        
+                        <div>
+                            <h5 style="font-size: 12px; font-weight:700; color:var(--text-secondary); margin-bottom:12px; text-transform:uppercase;">Historical Performance Indicators</h5>
+                            <div style="display: flex; flex-direction: column; gap: 12px;">
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+                                        <span>On-Time Delivery Rate (OTD)</span>
+                                        <span style="font-weight: 600;">${data.on_time_delivery_rate || data.otd || 'N/A'}</span>
+                                    </div>
+                                    <div class="range-slider-bar" style="height: 8px;">
+                                        <div class="range-fill" style="width: ${data.on_time_delivery_rate ? parseFloat(data.on_time_delivery_rate) : 85}%; background: var(--color-success);"></div>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+                                        <span>Product Quality Rating</span>
+                                        <span style="font-weight: 600;">${data.quality_rating || data.quality || 'N/A'}</span>
+                                    </div>
+                                    <div class="range-slider-bar" style="height: 8px;">
+                                        <div class="range-fill" style="width: ${data.quality_rating ? parseFloat(data.quality_rating) : 90}%; background: var(--color-primary);"></div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+                                        <span>Financial Stability Index</span>
+                                        <span style="font-weight: 600;">${data.financial_stability || 'Secure'}</span>
+                                    </div>
+                                    <div class="range-slider-bar" style="height: 8px;">
+                                        <div class="range-fill" style="width: 75%; background: var(--color-secondary);"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-faint); border-radius: 12px; padding: 16px; margin-top: 20px;">
+                        <h5 style="margin-bottom: 6px; font-size: 13px; font-weight: 700; color: var(--text-secondary);">Evaluator Recommendations:</h5>
+                        <p style="font-size: 13px; line-height: 1.5;">${data.summary || data.recommendations || 'Operational risk analysis complete.'}</p>
+                    </div>
+                `;
+            },
+            compliance_checker: (data) => {
+                const level = (data.overall_compliance_risk_level || 'Low').toUpperCase();
+                let badgeColor = 'background: rgba(16, 185, 129, 0.12); color: var(--color-success); border-color: rgba(16, 185, 129, 0.2);';
+                if (level.includes('CRITICAL') || level.includes('HIGH')) {
+                    badgeColor = 'background: rgba(239, 68, 68, 0.12); color: var(--color-danger); border-color: rgba(239, 68, 68, 0.2);';
+                } else if (level.includes('MEDIUM')) {
+                    badgeColor = 'background: rgba(245, 158, 11, 0.12); color: var(--color-warning); border-color: rgba(245, 158, 11, 0.2);';
+                }
+
+                return `
+                    <div class="metric-grid" style="margin-bottom: 20px;">
+                        <div class="metric-tile" style="flex-direction: row; justify-content: space-between; align-items: center;">
+                            <div>
+                                <span class="metric-label">Compliance Audit Status</span>
+                                <span class="metric-val" style="font-size: 18px;">Checked</span>
+                            </div>
+                            <span class="api-badge" style="${badgeColor} font-size: 13px; padding: 6px 12px;">Overall Risk: ${level}</span>
+                        </div>
+                    </div>
+
+                    <h5 style="font-size: 12px; font-weight:700; color:var(--text-secondary); margin-bottom:12px; text-transform:uppercase;">Flagged Compliance Risks</h5>
+                    <table class="widget-table" style="margin-bottom: 20px;">
+                        <thead>
+                            <tr>
+                                <th>Entity/Supplier</th>
+                                <th>Risk Class</th>
+                                <th>Jurisdiction</th>
+                                <th>Severity</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${(data.compliance_risks || []).map(risk => {
+                                let rBadge = 'status-pending';
+                                if (risk.risk_level === 'CRITICAL' || risk.risk_level === 'HIGH') rBadge = 'status-failed';
+                                else if (risk.risk_level === 'MEDIUM') rBadge = 'status-running';
+                                return `
+                                    <tr>
+                                        <td style="font-weight:600;">${risk.supplier || 'Primary Supplier'}</td>
+                                        <td>${risk.risk_type || 'Trade Limit'}</td>
+                                        <td>${risk.jurisdiction || 'Global'}</td>
+                                        <td><span class="node-status ${rBadge}">${risk.risk_level}</span></td>
+                                        <td style="font-size: 12px; color: var(--text-secondary);">${risk.description}</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                            ${(!data.compliance_risks || data.compliance_risks.length === 0) ? `
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: var(--text-muted);">No regulatory or sanctions violations identified.</td>
+                                </tr>
+                            ` : ''}
+                        </tbody>
+                    </table>
+
+                    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-faint); border-radius: 12px; padding: 16px;">
+                        <h5 style="margin-bottom: 6px; font-size: 13px; font-weight: 700; color: var(--text-secondary);">Mitigation Instructions:</h5>
+                        <p style="font-size: 13px; line-height: 1.5;">${data.recommended_actions || 'Supplier compliance logs marked clear.'}</p>
+                    </div>
+                `;
+            },
+            shortage_predictor: (data) => {
+                const prob = data.probability_estimates || data.shortage_probability || 'TBD';
+                const delay = data.expected_timelines || data.estimated_delay || 'TBD';
+                
+                return `
+                    <div class="metric-grid">
+                        <div class="metric-tile">
+                            <span class="metric-label">Shortage Risk Probability</span>
+                            <span class="metric-val" style="color: var(--color-danger);">${prob}</span>
+                        </div>
+                        <div class="metric-tile">
+                            <span class="metric-label">Estimated Delivery Delay</span>
+                            <span class="metric-val" style="color: var(--color-warning);">${delay}</span>
+                        </div>
+                    </div>
+                    
+                    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-faint); border-radius: 12px; padding: 16px;">
+                        <h5 style="margin-bottom: 6px; font-size: 13px; font-weight: 700; color: var(--text-secondary);">Material Shortage Predictor Verdict:</h5>
+                        <p style="font-size: 13px; line-height: 1.5;">${data.summary || data.predictions || 'Forecasting finished. Out of stock risks calculated.'}</p>
+                    </div>
+                `;
+            },
+            inventory_rebalancer: (data) => {
+                return `
+                    <h5 style="font-size: 12px; font-weight:700; color:var(--text-secondary); margin-bottom:12px; text-transform:uppercase;">Stock Balancing Recommendations</h5>
+                    <table class="widget-table" style="margin-bottom: 20px;">
+                        <thead>
+                            <tr>
+                                <th>Action Type</th>
+                                <th>Origin Location</th>
+                                <th>Target Location</th>
+                                <th>SKU ID</th>
+                                <th>Units Qty</th>
+                                <th>Urgency</th>
+                                <th>Estimated Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${(data.rebalancing_actions || []).map(act => {
+                                let badge = 'status-pending';
+                                if (act.urgency === 'HIGH' || act.urgency === 'IMMEDIATE') badge = 'status-failed';
+                                else if (act.urgency === 'MEDIUM' || act.urgency === 'URGENT') badge = 'status-running';
+                                return `
+                                    <tr>
+                                        <td><span class="api-badge" style="background: rgba(99, 102, 241, 0.12); color: var(--color-indigo); border-color: rgba(99, 102, 241, 0.2);">${act.action_type}</span></td>
+                                        <td>${act.from_location}</td>
+                                        <td>${act.to_location}</td>
+                                        <td style="font-family: monospace; font-weight: 600;">${act.sku}</td>
+                                        <td><b>${act.quantity.toLocaleString()}</b></td>
+                                        <td><span class="node-status ${badge}">${act.urgency}</span></td>
+                                        <td>${formatUsd(act.estimated_cost_usd)}</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                            ${(!data.rebalancing_actions || data.rebalancing_actions.length === 0) ? `
+                                <tr>
+                                    <td colspan="7" style="text-align: center; color: var(--text-muted);">No stock movements required. Local safety stock levels sufficient.</td>
+                                </tr>
+                            ` : ''}
+                        </tbody>
+                    </table>
+
+                    <h5 style="font-size: 12px; font-weight:700; color:var(--text-secondary); margin-bottom:12px; text-transform:uppercase;">Safety Stock Modifications</h5>
+                    <table class="widget-table" style="margin-bottom: 20px;">
+                        <thead>
+                            <tr>
+                                <th>SKU ID</th>
+                                <th>Current Min</th>
+                                <th>Proposed Min</th>
+                                <th>Adjustment Purpose</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${(data.safety_stock_recommendations || []).map(rec => `
+                                <tr>
+                                    <td style="font-family: monospace; font-weight: 600;">${rec.sku}</td>
+                                    <td>${rec.current_level}</td>
+                                    <td style="color: var(--color-success); font-weight: 700;">${rec.recommended_level}</td>
+                                    <td style="font-size: 12px; color: var(--text-secondary);">${rec.reason}</td>
+                                </tr>
+                            `).join('')}
+                            ${(!data.safety_stock_recommendations || data.safety_stock_recommendations.length === 0) ? `
+                                <tr>
+                                    <td colspan="4" style="text-align: center; color: var(--text-muted);">Safety stock limits kept at defaults.</td>
+                                </tr>
+                            ` : ''}
+                        </tbody>
+                    </table>
+
+                    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-faint); border-radius: 12px; padding: 16px;">
+                        <h5 style="margin-bottom: 4px; font-size: 13px; font-weight: 700; color: var(--text-secondary);">Rebalancing Summary:</h5>
+                        <p style="font-size: 13px; line-height: 1.5; color: var(--text-primary);">${data.summary || 'Logistics rebalancing vectors calculated.'}</p>
+                    </div>
+                `;
+            },
+            mitigation_recommender: (data) => {
+                return `
+                    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-faint); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                        <h5 style="margin-bottom: 6px; font-size: 13px; font-weight: 700; color: var(--text-secondary);">Mitigation Coordinator Strategy:</h5>
+                        <p style="font-size: 13px; line-height: 1.5;">${data.summary || data.recommendations || 'Mitigation pipeline checklist drafted.'}</p>
+                    </div>
+                    <div style="font-size: 13px; line-height: 1.6; color: var(--text-secondary);">
+                        ${data.mitigation_strategies ? `
+                            <h5 style="font-size: 12px; font-weight:700; color:var(--text-secondary); margin-bottom:12px; text-transform:uppercase;">Detailed Strategies</h5>
+                            <p>${Array.isArray(data.mitigation_strategies) ? data.mitigation_strategies.join('<br>') : data.mitigation_strategies}</p>
+                        ` : ''}
+                    </div>
+                `;
+            },
+            alt_supplier_finder: (data) => {
+                return `
+                    <h5 style="font-size: 12px; font-weight:700; color:var(--text-secondary); margin-bottom:12px; text-transform:uppercase;">Evaluated Backup Suppliers</h5>
+                    <table class="widget-table" style="margin-bottom: 20px;">
+                        <thead>
+                            <tr>
+                                <th>Supplier Name</th>
+                                <th>Region</th>
+                                <th>Categories</th>
+                                <th>Lead Time</th>
+                                <th>Cost Index</th>
+                                <th>Quality</th>
+                                <th>Onboarding</th>
+                                <th>Diversification Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${(data.alternative_suppliers || []).map(sup => `
+                                <tr>
+                                    <td style="font-weight: 700; color: var(--color-primary);">${sup.supplier_name}</td>
+                                    <td>${sup.region}</td>
+                                    <td style="font-size: 12px; color: var(--text-secondary);">${Array.isArray(sup.product_categories) ? sup.product_categories.join(', ') : sup.product_categories}</td>
+                                    <td>${sup.lead_time_days || sup.lead_time || 'N/A'} d</td>
+                                    <td><b style="font-family: monospace;">${sup.relative_cost_index || sup.cost_index || '1.0'}</b></td>
+                                    <td><span style="color: var(--color-success); font-weight: 700;">★ ${sup.quality_rating || sup.quality || 'N/A'}</span></td>
+                                    <td>${sup.onboarding_weeks || sup.onboarding || 'TBD'} wks</td>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <span style="font-weight: 600;">${sup.risk_diversification_score || 'N/A'}</span>
+                                            <div class="range-slider-bar" style="height: 6px; width: 60px;">
+                                                <div class="range-fill" style="width: ${(sup.risk_diversification_score || 5) * 10}%; background: var(--color-secondary);"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="8" style="background: rgba(255,255,255,0.005); font-size: 12px; color: var(--text-secondary); padding-top: 4px; padding-bottom: 12px; border-bottom: 1px solid var(--border-faint);">
+                                        <b>Recommendation:</b> ${sup.recommendation || 'Evaluated for procurement sourcing.'}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+
+                    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-faint); border-radius: 12px; padding: 16px;">
+                        <h5 style="margin-bottom: 6px; font-size: 13px; font-weight: 700; color: var(--text-secondary);">Sourcing Strategy Recommendation:</h5>
+                        <p style="font-size: 13px; line-height: 1.5;">${data.sourcing_strategy || data.summary || 'Supplier mapping engine done.'}</p>
+                    </div>
+                `;
+            },
+            stakeholder_notifier: (data) => {
+                const urgency = (data.urgency_level || 'MONITOR').toUpperCase();
+                let urgencyBadge = 'background: rgba(14, 165, 233, 0.12); color: var(--color-primary); border-color: rgba(14, 165, 233, 0.2);';
+                if (urgency.includes('IMMEDIATE')) {
+                    urgencyBadge = 'background: rgba(239, 68, 68, 0.12); color: var(--color-danger); border-color: rgba(239, 68, 68, 0.2);';
+                } else if (urgency.includes('URGENT')) {
+                    urgencyBadge = 'background: rgba(245, 158, 11, 0.12); color: var(--color-warning); border-color: rgba(245, 158, 11, 0.2);';
+                }
+
+                // Unique id creation to allow independent toggling
+                const uid = Math.random().toString(36).substring(7);
+
+                return `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h5 style="font-size: 12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase;">Stakeholder Target Alerts</h5>
+                        <span class="api-badge" style="${urgencyBadge} font-size: 12px; padding: 6px 12px;">Urgency: ${urgency}</span>
+                    </div>
+
+                    <div class="tab-menu" id="menu-${uid}">
+                        <button class="tab-btn active" onclick="switchAlertTab('${uid}', 'exec')">Executive Summary</button>
+                        <button class="tab-btn" onclick="switchAlertTab('${uid}', 'proc')">Procurement Alert</button>
+                        <button class="tab-btn" onclick="switchAlertTab('${uid}', 'log')">Logistics Memo</button>
+                        <button class="tab-btn" onclick="switchAlertTab('${uid}', 'comp')">Compliance Notice</button>
+                    </div>
+
+                    <div class="tab-content active" id="tab-${uid}-exec">
+                        <button class="copy-btn" onclick="copyAlertText('tab-${uid}-exec')"><i data-lucide="copy" style="width: 12px;"></i> Copy</button>
+                        <p style="white-space: pre-line;">${data.executive_summary || 'No executive summary provided.'}</p>
+                    </div>
+
+                    <div class="tab-content" id="tab-${uid}-proc">
+                        <button class="copy-btn" onclick="copyAlertText('tab-${uid}-proc')"><i data-lucide="copy" style="width: 12px;"></i> Copy</button>
+                        <p style="white-space: pre-line;">${data.procurement_alert || 'No procurement alert provided.'}</p>
+                    </div>
+
+                    <div class="tab-content" id="tab-${uid}-log">
+                        <button class="copy-btn" onclick="copyAlertText('tab-${uid}-log')"><i data-lucide="copy" style="width: 12px;"></i> Copy</button>
+                        <p style="white-space: pre-line;">${data.logistics_alert || 'No logistics alert provided.'}</p>
+                    </div>
+
+                    <div class="tab-content" id="tab-${uid}-comp">
+                        <button class="copy-btn" onclick="copyAlertText('tab-${uid}-comp')"><i data-lucide="copy" style="width: 12px;"></i> Copy</button>
+                        <p style="white-space: pre-line;">${data.compliance_notice || 'No compliance notices required for this incident.'}</p>
+                    </div>
+
+                    <h5 style="font-size: 12px; font-weight:700; color:var(--text-secondary); margin-top:24px; margin-bottom:12px; text-transform:uppercase;">Immediate Action Checklist</h5>
+                    <ul class="checklist">
+                        ${(data.action_items || []).map(item => `
+                            <li class="checklist-item">
+                                <input type="checkbox" class="checklist-checkbox" id="chk-${uid}-${Math.random().toString(36).substring(7)}">
+                                <div>
+                                    <span style="font-weight: 700; color: var(--color-primary);">[${item.owner || 'Operations'}]</span> 
+                                    <span>${item.action}</span> 
+                                    <span style="color: var(--text-muted); font-size:11px; margin-left: 8px;">(Deadline: ${item.deadline || '24 hours'})</span>
+                                </div>
+                            </li>
+                        `).join('')}
+                        ${(!data.action_items || data.action_items.length === 0) ? `
+                            <li class="checklist-item" style="color: var(--text-muted);">No action items requested.</li>
+                        ` : ''}
+                    </ul>
+                `;
+            },
+            geopolitical_risk_assessor: (data) => {
+                const prob = data.escalation_probability || 'Low';
+                let probClass = 'alert-green';
+                if (prob.toUpperCase().includes('HIGH') || prob.toUpperCase().includes('CRITICAL')) {
+                    probClass = 'alert-red';
+                } else if (prob.toUpperCase().includes('MEDIUM')) {
+                    probClass = 'alert-orange';
+                }
+
+                return `
+                    <div class="metric-grid">
+                        <div class="metric-tile">
+                            <span class="metric-label">Escalation Probability</span>
+                            <span class="metric-val ${probClass}">${prob}</span>
+                        </div>
+                        <div class="metric-tile">
+                            <span class="metric-label">Safe Alternative Regions</span>
+                            <span class="metric-val" style="font-size: 15px; font-weight:600;">${Array.isArray(data.safe_alternative_regions) ? data.safe_alternative_regions.join(', ') : (data.safe_alternative_regions || 'N/A')}</span>
+                        </div>
+                    </div>
+                    
+                    <h5 style="font-size: 12px; font-weight:700; color:var(--text-secondary); margin-bottom:12px; text-transform:uppercase;">Regional Risk Assessments</h5>
+                    <div style="overflow-x: auto; margin-bottom: 20px;">
+                        <table class="widget-table">
+                            <thead>
+                                <tr>
+                                    <th>Region / Country</th>
+                                    <th>Pol. Risk</th>
+                                    <th>Econ. Risk</th>
+                                    <th>Trade Policy</th>
+                                    <th>Trend</th>
+                                    <th>Key Risk Factors</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${(data.regional_risk_assessments || []).map(item => {
+                                    let trendIcon = 'minus';
+                                    let trendColor = 'var(--text-muted)';
+                                    if (item.trend && item.trend.toLowerCase().includes('deteriorating')) {
+                                        trendIcon = 'trending-down';
+                                        trendColor = 'var(--color-danger)';
+                                    } else if (item.trend && item.trend.toLowerCase().includes('improving')) {
+                                        trendIcon = 'trending-up';
+                                        trendColor = 'var(--color-success)';
+                                    }
+                                    return `
+                                        <tr>
+                                            <td style="font-weight: 700;">${item.region || ''} (${item.country || ''})</td>
+                                            <td style="font-weight: 600;">${item.political_risk_score}/10</td>
+                                            <td style="font-weight: 600;">${item.economic_risk_score}/10</td>
+                                            <td>${item.trade_policy_risk || 'N/A'}</td>
+                                            <td style="color: ${trendColor}; font-weight: 600; text-transform: capitalize;">
+                                                <div style="display: flex; align-items: center; gap: 4px;">
+                                                    <i data-lucide="${trendIcon}" style="width: 14px; height: 14px;"></i>
+                                                    ${item.trend || 'Stable'}
+                                                </div>
+                                            </td>
+                                            <td style="font-size: 12px; color: var(--text-secondary);">${item.key_risk_factors || 'None'}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                                ${(!data.regional_risk_assessments || data.regional_risk_assessments.length === 0) ? `
+                                    <tr>
+                                        <td colspan="6" style="text-align: center; color: var(--text-muted);">No regional assessments conducted.</td>
+                                    </tr>
+                                ` : ''}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-faint); border-radius: 12px; padding: 16px;">
+                        <h5 style="margin-bottom: 6px; font-size: 13px; font-weight: 700; color: var(--text-secondary);">Strategic Recommendations:</h5>
+                        <p style="font-size: 13px; line-height: 1.5;">${data.strategic_recommendations || 'Geopolitical evaluation completed.'}</p>
+                    </div>
+                `;
+            },
+            contract_risk_analyzer: (data) => {
+                const fm = data.force_majeure_applicable ? 'Applicable' : 'Not Applicable';
+                const fmClass = data.force_majeure_applicable ? 'alert-red' : 'alert-green';
+                
+                return `
+                    <div class="metric-grid">
+                        <div class="metric-tile">
+                            <span class="metric-label">Force Majeure Triggered</span>
+                            <span class="metric-val ${fmClass}">${fm}</span>
+                        </div>
+                        <div class="metric-tile">
+                            <span class="metric-label">Total Penalty Exposure</span>
+                            <span class="metric-val" style="color: var(--color-danger);">${formatUsd(data.total_penalty_exposure_usd)}</span>
+                        </div>
+                    </div>
+
+                    <h5 style="font-size: 12px; font-weight:700; color:var(--text-secondary); margin-bottom:12px; text-transform:uppercase;">Contract Clauses & Exposure</h5>
+                    <div style="overflow-x: auto; margin-bottom: 20px;">
+                        <table class="widget-table">
+                            <thead>
+                                <tr>
+                                    <th>Contract ID</th>
+                                    <th>Supplier</th>
+                                    <th>Clause Type</th>
+                                    <th>Risk Level</th>
+                                    <th>Exposure (USD)</th>
+                                    <th>Action Required</th>
+                                    <th>Deadline</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${(data.contract_risks || []).map(c => {
+                                    let badge = 'status-pending';
+                                    if (c.risk_level === 'CRITICAL' || c.risk_level === 'HIGH') badge = 'status-failed';
+                                    else if (c.risk_level === 'MEDIUM') badge = 'status-running';
+                                    return `
+                                        <tr>
+                                            <td style="font-family: monospace; font-weight: 600;">${c.contract_id}</td>
+                                            <td style="font-weight: 600;">${c.supplier}</td>
+                                            <td>${c.clause_type}</td>
+                                            <td><span class="node-status ${badge}">${c.risk_level}</span></td>
+                                            <td style="font-weight: 700;">${formatUsd(c.financial_exposure_usd)}</td>
+                                            <td style="font-size: 12px; color: var(--text-secondary);">${c.action_required || 'Monitor'}</td>
+                                            <td>${c.deadline || 'N/A'}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                                ${(!data.contract_risks || data.contract_risks.length === 0) ? `
+                                    <tr>
+                                        <td colspan="7" style="text-align: center; color: var(--text-muted);">No contract liabilities or risk exposures flagged.</td>
+                                    </tr>
+                                ` : ''}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-faint); border-radius: 12px; padding: 16px;">
+                        <h5 style="margin-bottom: 6px; font-size: 13px; font-weight: 700; color: var(--text-secondary);">Legal Counsel Advisory:</h5>
+                        <p style="font-size: 13px; line-height: 1.5;">${data.recommended_legal_actions || 'Contractual obligations verified.'}</p>
+                    </div>
+                `;
+            },
+            insurance_claims_advisor: (data) => {
+                return `
+                    <div class="metric-grid">
+                        <div class="metric-tile">
+                            <span class="metric-label">Estimated Insurance Recovery</span>
+                            <span class="metric-val" style="color: var(--color-success);">${formatUsd(data.total_estimated_recovery_usd)}</span>
+                        </div>
+                    </div>
+
+                    <h5 style="font-size: 12px; font-weight:700; color:var(--text-secondary); margin-bottom:12px; text-transform:uppercase;">Applicable Policies</h5>
+                    <div style="overflow-x: auto; margin-bottom: 20px;">
+                        <table class="widget-table">
+                            <thead>
+                                <tr>
+                                    <th>Policy Type</th>
+                                    <th>Coverage Trigger</th>
+                                    <th>Est. Recoverable</th>
+                                    <th>Deductible</th>
+                                    <th>Filing Deadline</th>
+                                    <th>Required Docs</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${(data.applicable_policies || []).map(p => `
+                                    <tr>
+                                        <td style="font-weight: 700; color: var(--color-primary);">${p.policy_type}</td>
+                                        <td>${p.coverage_trigger}</td>
+                                        <td style="font-weight: 700; color: var(--color-success);">${formatUsd(p.estimated_recoverable_usd)}</td>
+                                        <td>${formatUsd(p.deductible_usd)}</td>
+                                        <td>${p.filing_deadline || 'N/A'}</td>
+                                        <td style="font-size: 12px; color: var(--text-secondary);">${Array.isArray(p.documentation_required) ? p.documentation_required.join(', ') : (p.documentation_required || 'N/A')}</td>
+                                    </tr>
+                                `).join('')}
+                                ${(!data.applicable_policies || data.applicable_policies.length === 0) ? `
+                                    <tr>
+                                        <td colspan="6" style="text-align: center; color: var(--text-muted);">No claimable policies identified.</td>
+                                    </tr>
+                                ` : ''}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px;">
+                        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-faint); border-radius: 12px; padding: 16px;">
+                            <h5 style="margin-bottom: 6px; font-size: 13px; font-weight: 700; color: var(--color-warning);">Exclusion & Compliance Warnings:</h5>
+                            <p style="font-size: 13px; line-height: 1.5; color: var(--text-secondary);">${data.exclusion_warnings || 'No policy exclusions triggered.'}</p>
+                        </div>
+                        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-faint); border-radius: 12px; padding: 16px;">
+                            <h5 style="margin-bottom: 6px; font-size: 13px; font-weight: 700; color: var(--text-secondary);">Claims Action Plan:</h5>
+                            <p style="font-size: 13px; line-height: 1.5; color: var(--text-primary);">${data.claims_action_plan || 'Insurance guidelines configured.'}</p>
+                        </div>
+                    </div>
+                `;
+            },
+            demand_forecaster: (data) => {
+                return `
+                    <div class="metric-grid">
+                        <div class="metric-tile">
+                            <span class="metric-label">Estimated Demand Recovery</span>
+                            <span class="metric-val" style="color: var(--color-indigo);">${data.demand_recovery_weeks || 'TBD'} Weeks</span>
+                        </div>
+                        <div class="metric-tile">
+                            <span class="metric-label">Most Affected Segments</span>
+                            <span class="metric-val" style="font-size: 15px; font-weight:600;">${Array.isArray(data.most_affected_segments) ? data.most_affected_segments.join(', ') : (data.most_affected_segments || 'N/A')}</span>
+                        </div>
+                    </div>
+
+                    <h5 style="font-size: 12px; font-weight:700; color:var(--text-secondary); margin-bottom:12px; text-transform:uppercase;">Demand Forecast Shift Index</h5>
+                    <div style="overflow-x: auto; margin-bottom: 20px;">
+                        <table class="widget-table">
+                            <thead>
+                                <tr>
+                                    <th>Product Category</th>
+                                    <th>Current Demand</th>
+                                    <th>Forecasted Demand</th>
+                                    <th>Change %</th>
+                                    <th>Confidence</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${(data.demand_forecast || []).map(f => {
+                                    let changeColor = 'var(--text-primary)';
+                                    let changeText = '0%';
+                                    let val = parseFloat(f.change_percent);
+                                    if (val > 0) {
+                                        changeColor = 'var(--color-success)';
+                                        changeText = `+${val}%`;
+                                    } else if (val < 0) {
+                                        changeColor = 'var(--color-danger)';
+                                        changeText = `${val}%`;
+                                    } else if (f.change_percent) {
+                                        changeText = f.change_percent;
+                                    }
+                                    return `
+                                        <tr>
+                                            <td style="font-weight: 700;">${f.product_category}</td>
+                                            <td>${f.current_demand_index || '100'}</td>
+                                            <td>${f.forecasted_demand_index || '100'}</td>
+                                            <td style="color: ${changeColor}; font-weight: 700;">${changeText}</td>
+                                            <td>${f.confidence || 'Medium'}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                                ${(!data.demand_forecast || data.demand_forecast.length === 0) ? `
+                                    <tr>
+                                        <td colspan="5" style="text-align: center; color: var(--text-muted);">No demand variance predicted.</td>
+                                    </tr>
+                                ` : ''}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-faint); border-radius: 12px; padding: 16px;">
+                        <h5 style="margin-bottom: 6px; font-size: 13px; font-weight: 700; color: var(--text-secondary);">Demand Volatility Summary:</h5>
+                        <p style="font-size: 13px; line-height: 1.5;">${data.summary || 'Market consumption models completed.'}</p>
+                    </div>
+                `;
+            },
+            production_schedule_adjuster: (data) => {
+                return `
+                    <div class="metric-grid">
+                        <div class="metric-tile">
+                            <span class="metric-label">Overtime Requirements</span>
+                            <span class="metric-val" style="font-size: 14px; font-weight: 600;">${data.overtime_requirements || 'None expected'}</span>
+                        </div>
+                        <div class="metric-tile">
+                            <span class="metric-label">Capacity Reallocation</span>
+                            <span class="metric-val" style="font-size: 14px; font-weight: 600;">${data.capacity_reallocation || 'None expected'}</span>
+                        </div>
+                    </div>
+
+                    <h5 style="font-size: 12px; font-weight:700; color:var(--text-secondary); margin-bottom:12px; text-transform:uppercase;">Line Adjustments</h5>
+                    <div style="overflow-x: auto; margin-bottom: 20px;">
+                        <table class="widget-table">
+                            <thead>
+                                <tr>
+                                    <th>Production Line</th>
+                                    <th>Current Schedule</th>
+                                    <th>Recommended Action</th>
+                                    <th>Revised Output</th>
+                                    <th>Revised Completion Date</th>
+                                    <th>Reason / Logic</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${(data.production_adjustments || []).map(p => `
+                                    <tr>
+                                        <td style="font-weight: 700; color: var(--color-primary);">${p.production_line}</td>
+                                        <td>${p.current_schedule}</td>
+                                        <td><span class="api-badge" style="background: rgba(245, 158, 11, 0.12); color: var(--color-warning); border-color: rgba(245, 158, 11, 0.2);">${p.recommended_action}</span></td>
+                                        <td><b>${p.revised_output_units ? p.revised_output_units.toLocaleString() : 'N/A'}</b></td>
+                                        <td>${p.revised_completion_date || 'N/A'}</td>
+                                        <td style="font-size: 12px; color: var(--text-secondary);">${p.reason || 'Component stockout protection'}</td>
+                                    </tr>
+                                `).join('')}
+                                ${(!data.production_adjustments || data.production_adjustments.length === 0) ? `
+                                    <tr>
+                                        <td colspan="6" style="text-align: center; color: var(--text-muted);">No factory schedule adjustments required.</td>
+                                    </tr>
+                                ` : ''}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-faint); border-radius: 12px; padding: 16px;">
+                        <h5 style="margin-bottom: 6px; font-size: 13px; font-weight: 700; color: var(--text-secondary);">Production Adjustment Logic:</h5>
+                        <p style="font-size: 13px; line-height: 1.5;">${data.summary || 'Production queue recalculations completed.'}</p>
+                    </div>
+                `;
+            },
+            logistics_route_optimizer: (data) => {
+                return `
+                    <h5 style="font-size: 12px; font-weight:700; color:var(--text-secondary); margin-bottom:12px; text-transform:uppercase;">Alternative Shipping Routes</h5>
+                    <div style="overflow-x: auto; margin-bottom: 20px;">
+                        <table class="widget-table">
+                            <thead>
+                                <tr>
+                                    <th>Route ID</th>
+                                    <th>Origin</th>
+                                    <th>Destination</th>
+                                    <th>Mode</th>
+                                    <th>Transit Days</th>
+                                    <th>Cost Index</th>
+                                    <th>Reliability</th>
+                                    <th>Recommended For</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${(data.alternative_routes || []).map(r => `
+                                    <tr>
+                                        <td style="font-family: monospace; font-weight: 700;">${r.route_id}</td>
+                                        <td>${r.origin}</td>
+                                        <td>${r.destination}</td>
+                                        <td><span class="api-badge" style="background: rgba(13, 148, 136, 0.12); color: var(--color-secondary); border-color: rgba(13, 148, 136, 0.2);">${r.mode}</span></td>
+                                        <td><b>${r.transit_days} days</b></td>
+                                        <td>${r.cost_index}x</td>
+                                        <td>
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                <span style="font-weight: 600;">${r.reliability_score || 'N/A'}</span>
+                                                <div class="range-slider-bar" style="height: 6px; width: 50px;">
+                                                    <div class="range-fill" style="width: ${(r.reliability_score || 5) * 10}%; background: var(--color-success);"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="font-size: 12px; color: var(--text-secondary);">${r.recommended_for || 'General shipments'}</td>
+                                    </tr>
+                                `).join('')}
+                                ${(!data.alternative_routes || data.alternative_routes.length === 0) ? `
+                                    <tr>
+                                        <td colspan="8" style="text-align: center; color: var(--text-muted);">No alternative routing parameters calculated.</td>
+                                    </tr>
+                                ` : ''}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 16px;">
+                        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-faint); border-radius: 12px; padding: 16px;">
+                            <h5 style="margin-bottom: 6px; font-size: 13px; font-weight: 700; color: var(--text-secondary);">Mode-Switch Recommendations:</h5>
+                            <p style="font-size: 13px; line-height: 1.5; color: var(--text-primary);">${data.mode_switch_recommendations || 'Logistics mode distributions evaluated.'}</p>
+                        </div>
+                        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-faint); border-radius: 12px; padding: 16px;">
+                            <h5 style="margin-bottom: 6px; font-size: 13px; font-weight: 700; color: var(--text-secondary);">Route Optimizer Summary:</h5>
+                            <p style="font-size: 13px; line-height: 1.5; color: var(--text-secondary);">${data.summary || 'Optimal routing pathing mapped.'}</p>
+                        </div>
+                    </div>
+                `;
+            },
+            financial_hedging_advisor: (data) => {
+                return `
+                    <div class="metric-grid">
+                        <div class="metric-tile">
+                            <span class="metric-label">Total Unhedged Exposure</span>
+                            <span class="metric-val" style="color: var(--color-danger);">${formatUsd(data.total_unhedged_exposure_usd)}</span>
+                        </div>
+                        <div class="metric-tile">
+                            <span class="metric-label">Working Capital Adjustment</span>
+                            <span class="metric-val" style="color: var(--color-warning);">${formatUsd(data.working_capital_adjustment_usd)}</span>
+                        </div>
+                    </div>
+
+                    <h5 style="font-size: 12px; font-weight:700; color:var(--text-secondary); margin-bottom:12px; text-transform:uppercase;">Hedging Recommendations</h5>
+                    <div style="overflow-x: auto; margin-bottom: 20px;">
+                        <table class="widget-table">
+                            <thead>
+                                <tr>
+                                    <th>Exposure Type</th>
+                                    <th>Financial Instrument</th>
+                                    <th>Notional Value (USD)</th>
+                                    <th>Hedge Ratio %</th>
+                                    <th>Estimated Cost</th>
+                                    <th>Rationale</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${(data.hedging_recommendations || []).map(h => `
+                                    <tr>
+                                        <td style="font-weight: 700;">${h.exposure_type}</td>
+                                        <td><span class="api-badge" style="background: rgba(16, 185, 129, 0.12); color: var(--color-success); border-color: rgba(16, 185, 129, 0.2);">${h.instrument}</span></td>
+                                        <td><b>${formatUsd(h.notional_value_usd)}</b></td>
+                                        <td style="font-weight: 700; color: var(--color-indigo);">${h.hedge_ratio_percent}%</td>
+                                        <td>${formatUsd(h.estimated_cost_usd)}</td>
+                                        <td style="font-size: 12px; color: var(--text-secondary);">${h.rationale || 'Protects margin against commodity price rise.'}</td>
+                                    </tr>
+                                `).join('')}
+                                ${(!data.hedging_recommendations || data.hedging_recommendations.length === 0) ? `
+                                    <tr>
+                                        <td colspan="6" style="text-align: center; color: var(--text-muted);">No hedging positions recommended.</td>
+                                    </tr>
+                                ` : ''}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-faint); border-radius: 12px; padding: 16px;">
+                        <h5 style="margin-bottom: 6px; font-size: 13px; font-weight: 700; color: var(--text-secondary);">Hedging Priorities & Actions:</h5>
+                        <p style="font-size: 13px; line-height: 1.5;">${data.priority_actions || 'Treasury hedging advisor run completed.'}</p>
+                    </div>
+                `;
+            },
+            sustainability_assessor: (data) => {
+                return `
+                    <div class="metric-grid">
+                        <div class="metric-tile">
+                            <span class="metric-label">Scope 3 Emissions Impact</span>
+                            <span class="metric-val" style="font-size: 14px; font-weight: 600;">${data.scope3_impact || 'Negligible variance predicted'}</span>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 20px;">
+                        <div>
+                            <h5 style="font-size: 12px; font-weight:700; color:var(--text-secondary); margin-bottom:12px; text-transform:uppercase;">Carbon Emissions Impact</h5>
+                            <table class="widget-table">
+                                <thead>
+                                    <tr>
+                                        <th>Mitigation Action</th>
+                                        <th>CO2 (Tonnes)</th>
+                                        <th>Offset Cost</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${(data.carbon_impact || []).map(c => `
+                                        <tr>
+                                            <td style="font-weight: 600;">${c.action}</td>
+                                            <td style="color: var(--color-danger); font-weight: 700;">+${c.additional_co2_tonnes} t</td>
+                                            <td>${formatUsd(c.offset_cost_usd)}</td>
+                                        </tr>
+                                    `).join('')}
+                                    ${(!data.carbon_impact || data.carbon_impact.length === 0) ? `
+                                        <tr>
+                                            <td colspan="3" style="text-align: center; color: var(--text-muted);">No additional carbon footprint calculated.</td>
+                                        </tr>
+                                    ` : ''}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div>
+                            <h5 style="font-size: 12px; font-weight:700; color:var(--text-secondary); margin-bottom:12px; text-transform:uppercase;">Alternative Sourcing ESG Risks</h5>
+                            <table class="widget-table">
+                                <thead>
+                                    <tr>
+                                        <th>Supplier</th>
+                                        <th>ESG Risk Type</th>
+                                        <th>Severity</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${(data.esg_risks || []).map(r => {
+                                        let badge = 'status-pending';
+                                        if (r.severity === 'HIGH' || r.severity === 'CRITICAL') badge = 'status-failed';
+                                        else if (r.severity === 'MEDIUM') badge = 'status-running';
+                                        return `
+                                            <tr>
+                                                <td style="font-weight: 600;">${r.supplier}</td>
+                                                <td>${r.risk_type}</td>
+                                                <td><span class="node-status ${badge}">${r.severity}</span></td>
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                    ${(!data.esg_risks || data.esg_risks.length === 0) ? `
+                                        <tr>
+                                            <td colspan="3" style="text-align: center; color: var(--text-muted);">No ESG flags raised.</td>
+                                        </tr>
+                                    ` : ''}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-faint); border-radius: 12px; padding: 16px; margin-bottom: 12px;">
+                        <h5 style="margin-bottom: 6px; font-size: 13px; font-weight: 700; color: var(--text-secondary);">Sustainability Aligned Alternatives:</h5>
+                        <p style="font-size: 13px; line-height: 1.5; color: var(--text-primary);">${data.sustainability_aligned_alternatives || 'Green sourcing channels configured.'}</p>
+                    </div>
+
+                    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-faint); border-radius: 12px; padding: 16px;">
+                        <h5 style="margin-bottom: 6px; font-size: 13px; font-weight: 700; color: var(--text-secondary);">ESG Trade-Off Analysis Summary:</h5>
+                        <p style="font-size: 13px; line-height: 1.5; color: var(--text-secondary);">${data.esg_trade_off_summary || 'ESG compliance checks passed.'}</p>
+                    </div>
+                `;
+            },
+            customer_communication: (data) => {
+                const uid = Math.random().toString(36).substring(7);
+                return `
+                    <h5 style="font-size: 12px; font-weight:700; color:var(--text-secondary); margin-bottom:12px; text-transform:uppercase;">Proactive Customer Notifications</h5>
+                    <div class="tab-menu" id="menu-${uid}">
+                        ${(data.customer_notifications || []).map((n, i) => `
+                            <button class="tab-btn ${i === 0 ? 'active' : ''}" onclick="switchAlertTab('${uid}', 'cust-${i}')">${n.segment || 'Segment'}</button>
+                        `).join('')}
+                    </div>
+
+                    ${(data.customer_notifications || []).map((n, i) => `
+                        <div class="tab-content ${i === 0 ? 'active' : ''}" id="tab-${uid}-cust-${i}">
+                            <button class="copy-btn" onclick="copyAlertText('tab-${uid}-cust-${i}')"><i data-lucide="copy" style="width: 12px;"></i> Copy</button>
+                            <div style="margin-bottom: 8px;">
+                                <span class="api-badge" style="background: rgba(99, 102, 241, 0.12); color: var(--color-indigo); border-color: rgba(99, 102, 241, 0.2); font-size:11px;">Channel: ${n.channel || 'Email'}</span>
+                                <span class="node-status ${n.urgency === 'HIGH' ? 'status-failed' : 'status-running'}" style="margin-left: 8px; padding:2px 6px;">Urgency: ${n.urgency || 'Medium'}</span>
+                            </div>
+                            <p style="font-size: 13px; font-weight: 700; margin-bottom: 6px;">Subject: ${n.subject}</p>
+                            <p style="white-space: pre-line; border-top: 1px solid var(--border-faint); padding-top: 8px;">${n.message_body}</p>
+                        </div>
+                    `).join('')}
+                    
+                    <h5 style="font-size: 12px; font-weight:700; color:var(--text-secondary); margin-top:20px; margin-bottom:12px; text-transform:uppercase;">Customer Support FAQ Drafts</h5>
+                    <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                        ${(data.faq_responses || []).map(faq => `
+                            <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-faint); border-radius: 10px; padding: 12px;">
+                                <p style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">Q: ${faq.question}</p>
+                                <p style="font-size: 12.5px; color: var(--text-secondary);">A: ${faq.answer}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-faint); border-radius: 12px; padding: 16px;">
+                            <h5 style="margin-bottom: 6px; font-size: 13px; font-weight: 700; color: var(--text-secondary);">Compensation Recommendations:</h5>
+                            <p style="font-size: 13px; line-height: 1.5; color: var(--text-primary);">${data.compensation_recommendations || 'Goodwill gestures not proposed.'}</p>
+                        </div>
+                        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-faint); border-radius: 12px; padding: 16px;">
+                            <h5 style="margin-bottom: 6px; font-size: 13px; font-weight: 700; color: var(--text-secondary);">Social Media Holding Statement:</h5>
+                            <p style="font-size: 13px; line-height: 1.5; color: var(--text-secondary);">${data.social_media_statement || 'Public statement not required.'}</p>
+                        </div>
+                    </div>
+                `;
+            },
+            recovery_timeline_planner: (data) => {
+                const uid = Math.random().toString(36).substring(7);
+                return `
+                    <div class="metric-grid">
+                        <div class="metric-tile">
+                            <span class="metric-label">Overall Recovery ETA</span>
+                            <span class="metric-val" style="color: var(--color-success);">${data.overall_recovery_eta_weeks || 'TBD'} Weeks</span>
+                        </div>
+                        <div class="metric-tile">
+                            <span class="metric-label">Critical Path Highlight</span>
+                            <span class="metric-val" style="font-size: 15px; font-weight: 600;">${data.critical_path || 'General logistics sequence'}</span>
+                        </div>
+                    </div>
+
+                    <h5 style="font-size: 12px; font-weight:700; color:var(--text-secondary); margin-bottom:12px; text-transform:uppercase;">Phased Recovery Actions Timeline</h5>
+                    <div class="tab-menu" id="menu-${uid}">
+                        ${(data.recovery_phases || []).map((phase, i) => `
+                            <button class="tab-btn ${i === 0 ? 'active' : ''}" onclick="switchAlertTab('${uid}', 'phase-${i}')">${phase.phase || 'Phase'}</button>
+                        `).join('')}
+                    </div>
+
+                    ${(data.recovery_phases || []).map((phase, i) => `
+                        <div class="tab-content ${i === 0 ? 'active' : ''}" id="tab-${uid}-phase-${i}">
+                            <div style="font-size:12px; color:var(--text-muted); font-weight:700; text-transform:uppercase; margin-bottom:12px;">Timeframe: ${phase.timeframe || 'TBD'}</div>
+                            <ul class="checklist">
+                                ${(phase.actions || []).map(act => {
+                                    let badge = 'status-pending';
+                                    if (act.status === 'CRITICAL' || act.status === 'HIGH') badge = 'status-failed';
+                                    else if (act.status === 'IN_PROGRESS' || act.status === 'RUNNING') badge = 'status-running';
+                                    else if (act.status === 'COMPLETED') badge = 'status-success';
+                                    return `
+                                        <li class="checklist-item">
+                                            <input type="checkbox" class="checklist-checkbox" ${act.status === 'COMPLETED' ? 'checked' : ''}>
+                                            <div>
+                                                <span style="font-weight: 700; color: var(--color-primary);">[${act.owner || 'Operations'}]</span>
+                                                <span>${act.action}</span>
+                                                <span style="color: var(--text-muted); font-size:11px; margin-left: 8px;">(Deadline: ${act.deadline || 'N/A'})</span>
+                                                ${act.dependencies ? `<span style="font-size:11px; color:var(--text-warning); margin-left: 8px;">(Depends: ${act.dependencies})</span>` : ''}
+                                                <span class="node-status ${badge}" style="margin-left: 8px; font-size:9px; padding:1px 4px;">${act.status || 'Pending'}</span>
+                                            </div>
+                                        </li>
+                                    `;
+                                }).join('')}
+                            </ul>
+                        </div>
+                    `).join('')}
+
+                    <h5 style="font-size: 12px; font-weight:700; color:var(--text-secondary); margin-top:24px; margin-bottom:12px; text-transform:uppercase;">Recovery Milestones & KPIs</h5>
+                    <div style="overflow-x: auto; margin-bottom: 20px;">
+                        <table class="widget-table">
+                            <thead>
+                                <tr>
+                                    <th>Milestone Description</th>
+                                    <th>Target Date</th>
+                                    <th>Key Performance Indicator (KPI)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${(data.recovery_milestones || []).map(m => `
+                                    <tr>
+                                        <td style="font-weight: 700; color: var(--color-secondary);">${m.milestone}</td>
+                                        <td>${m.target_date || 'TBD'}</td>
+                                        <td style="font-size: 12.5px; color: var(--text-secondary);">${m.kpi || 'N/A'}</td>
+                                    </tr>
+                                `).join('')}
+                                ${(!data.recovery_milestones || data.recovery_milestones.length === 0) ? `
+                                    <tr>
+                                        <td colspan="3" style="text-align: center; color: var(--text-muted);">No recovery milestones set.</td>
+                                    </tr>
+                                ` : ''}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-faint); border-radius: 12px; padding: 16px;">
+                        <h5 style="margin-bottom: 6px; font-size: 13px; font-weight: 700; color: var(--text-secondary);">Executive Action Plan Summary:</h5>
+                        <p style="font-size: 13px; line-height: 1.5; font-weight:500;">${data.executive_action_summary || 'Timeline plan generated successfully.'}</p>
+                    </div>
+                `;
+            }
+        };
+
+        // Alert tab switcher function (used in stakeholder/recovery/customer tab view)
+        window.switchAlertTab = function(uid, tabName) {
+            const menu = document.getElementById(`menu-${uid}`);
+            if (!menu) return;
+            const buttons = menu.querySelectorAll('.tab-btn');
+            
+            // Remove active classes
+            buttons.forEach(btn => btn.classList.remove('active'));
+            const contents = document.querySelectorAll(`[id^="tab-${uid}-"]`);
+            contents.forEach(content => content.classList.remove('active'));
+
+            // Match button by name or index
+            let targetBtn = null;
+            if (tabName.startsWith('cust-')) {
+                const idx = parseInt(tabName.split('-')[1]);
+                targetBtn = buttons[idx];
+            } else if (tabName.startsWith('phase-')) {
+                const idx = parseInt(tabName.split('-')[1]);
+                targetBtn = buttons[idx];
+            } else {
+                targetBtn = Array.from(buttons).find(btn => {
+                    const text = btn.innerText.toLowerCase();
+                    if (tabName === 'exec') return text.includes('exec');
+                    if (tabName === 'proc') return text.includes('procurement');
+                    if (tabName === 'log') return text.includes('logistics');
+                    if (tabName === 'comp') return text.includes('compliance');
+                    return text.includes(tabName.toLowerCase());
+                });
+            }
+            
+            if (targetBtn) targetBtn.classList.add('active');
+
+            const targetContent = document.getElementById(`tab-${uid}-${tabName}`);
+            if (targetContent) targetContent.classList.add('active');
+        };
+
+        window.copyAlertText = function(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const text = el.querySelector('p').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = el.querySelector('.copy-btn');
+                btn.innerHTML = `<i data-lucide="check" style="width: 12px;"></i> Copied!`;
+                lucide.createIcons();
+                setTimeout(() => {
+                    btn.innerHTML = `<i data-lucide="copy" style="width: 12px;"></i> Copy`;
+                    lucide.createIcons();
+                }, 2000);
+            });
+        };
+
+        // Main Execution Orchestrator
+        async function startAnalysis() {
+            const promptInput = document.getElementById('disruption-input').value.trim();
+            if (!promptInput) {
+                alert('Please enter a description of the disruption first!');
+                return;
+            }
+
+            const groqKey = document.getElementById('groq-key-input').value.trim();
+            const geminiKey = document.getElementById('gemini-key-input').value.trim();
+
+            if (!groqKey && !geminiKey) {
+                alert('Warning: You have not provided any API keys. The system will attempt to use server environment variables, but this may fail if they are unset.');
+            }
+
+            isRunning = true;
+            runBtn.disabled = true;
+            emptyState.style.display = 'none';
+
+            // Show and reset progress stats card
+            const statsPanel = document.getElementById('progress-bar-card');
+            statsPanel.style.display = 'flex';
+            
+            const progressFill = document.getElementById('run-progress-bar-fill');
+            const progressText = document.getElementById('stats-progress-text');
+            const activeAgentText = document.getElementById('stats-active-agent');
+            const elapsedTimeText = document.getElementById('stats-elapsed-time');
+            const statusBadge = document.getElementById('running-status-badge');
+            
+            progressFill.style.width = '0%';
+            progressText.innerText = '0 / 20 completed';
+            activeAgentText.innerText = 'Initializing...';
+            elapsedTimeText.innerText = '0.0s';
+            
+            statusBadge.innerText = 'Running';
+            statusBadge.style.background = 'rgba(2, 132, 199, 0.12)';
+            statusBadge.style.color = 'var(--color-primary)';
+            statusBadge.style.borderColor = 'rgba(2, 132, 199, 0.2)';
+
+            // Clean previous cards
+            const prevCards = feedContainer.querySelectorAll('.agent-output-card');
+            prevCards.forEach(c => c.remove());
+
+            // Reset visual track nodes to pending
+            AGENTS.forEach(a => setNodeState(a.id, 'idle'));
+
+            systemDot.className = 'dot running';
+            systemStatusText.innerText = 'Pipeline Running...';
+
+            let currentInput = { description: promptInput };
+            
+            let startTime = Date.now();
+            let timerInterval = setInterval(() => {
+                let diff = (Date.now() - startTime) / 1000;
+                elapsedTimeText.innerText = diff.toFixed(1) + 's';
+            }, 100);
+
+            // Sequential Execution Loop
+            for (let i = 0; i < AGENTS.length; i++) {
+                const agent = AGENTS[i];
+                
+                // Update UI Node to Running
+                setNodeState(agent.id, 'running');
+                activeAgentText.innerText = agent.name;
+                
+                // Create output card shell in Loading state
+                const card = createOutputCardShell(agent, i + 1);
+                feedContainer.appendChild(card);
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                try {
+                    const headers = {
+                        'Content-Type': 'application/json'
+                    };
+                    if (groqKey) headers['x-groq-key'] = groqKey;
+                    if (geminiKey) headers['x-gemini-key'] = geminiKey;
+
+                    const response = await fetch('/run_agent', {
+                        method: 'POST',
+                        headers: headers,
+                        body: JSON.stringify({
+                            agent_id: agent.id,
+                            input_data: currentInput
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Server returned status code ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+
+                    const result = data.result;
+
+                    // Update UI Node to Success
+                    setNodeState(agent.id, 'success');
+
+                    // Populate Card
+                    populateOutputCard(agent.id, result, card);
+                    
+                    // Update progress stats
+                    let completedCount = i + 1;
+                    progressFill.style.width = `${(completedCount / AGENTS.length) * 100}%`;
+                    progressText.innerText = `${completedCount} / ${AGENTS.length} completed`;
+
+                    // The result from this agent becomes the input for the next agent
+                    currentInput = result;
+
+                } catch (err) {
+                    console.error(`Agent ${agent.id} failed:`, err);
+                    setNodeState(agent.id, 'failed');
+                    
+                    clearInterval(timerInterval);
+                    statusBadge.innerText = 'Failed';
+                    statusBadge.style.background = 'rgba(239, 68, 68, 0.12)';
+                    statusBadge.style.color = 'var(--color-danger)';
+                    statusBadge.style.borderColor = 'rgba(239, 68, 68, 0.2)';
+                    activeAgentText.innerText = `Error on: ${agent.name}`;
+
+                    // Show error state in card body
+                    card.querySelector('.card-body').innerHTML = `
+                        <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 12px; padding: 20px; color: var(--color-danger);">
+                            <h4 style="font-weight: 700; display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                                <i data-lucide="alert-octagon"></i> Agent Computation Error
+                            </h4>
+                            <p style="font-size:13px; line-height:1.5;">${err.message || 'An error occurred during LLM request. Please verify your API Key and network connection.'}</p>
+                        </div>
+                    `;
+                    lucide.createIcons();
+                    
+                    systemDot.className = 'dot error';
+                    systemStatusText.innerText = 'Execution Failed';
+                    isRunning = false;
+                    runBtn.disabled = false;
+                    return; // Halt pipeline
+                }
+            }
+
+            // Completed Entire Pipeline
+            clearInterval(timerInterval);
+            statusBadge.innerText = 'Completed';
+            statusBadge.style.background = 'rgba(16, 185, 129, 0.12)';
+            statusBadge.style.color = 'var(--color-success)';
+            statusBadge.style.borderColor = 'rgba(16, 185, 129, 0.2)';
+            activeAgentText.innerText = 'Finished';
+
+            systemDot.className = 'dot';
+            systemStatusText.innerText = 'Analysis Complete';
+            isRunning = false;
+            runBtn.disabled = false;
+        }
+
+        function createOutputCardShell(agent, stepNum) {
+            const card = document.createElement('div');
+            card.className = 'agent-output-card visible';
+            card.id = `output-card-${agent.id}`;
+
+            card.innerHTML = `
+                <div class="card-header-bar">
+                    <div class="card-title-group">
+                        <div class="node-icon-bg" style="width:28px; height:28px;">
+                            <i data-lucide="${agent.icon}" style="width:14px; height:14px;"></i>
+                        </div>
+                        <h4 style="font-size: 14px; font-weight: 700;">Step ${String(stepNum).padStart(2, '0')}: ${agent.name}</h4>
+                        <span class="card-badge">${agent.id.toUpperCase()}</span>
+                    </div>
+                    <div class="card-controls">
+                        <button class="view-toggle-btn" id="toggle-btn-${agent.id}" onclick="toggleRawJson('${agent.id}')" disabled>
+                            <i data-lucide="code" style="width: 14px;"></i> View JSON
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body" id="body-${agent.id}">
+                    <div style="display:flex; flex-direction:column; gap:12px; opacity:0.6;">
+                        <div style="height:16px; width:40%; background:rgba(255,255,255,0.08); border-radius:4px; animation:pulse 1s infinite alternate;"></div>
+                        <div style="height:48px; width:100%; background:rgba(255,255,255,0.04); border-radius:8px; animation:pulse 1s infinite alternate;"></div>
+                        <div style="height:32px; width:70%; background:rgba(255,255,255,0.04); border-radius:8px; animation:pulse 1s infinite alternate;"></div>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+            return card;
+        }
+
+        function populateOutputCard(agentId, result, card) {
+            const body = card.querySelector('.card-body');
+            const toggleBtn = card.querySelector(`.view-toggle-btn`);
+            toggleBtn.removeAttribute('disabled');
+
+            // Formatted View container
+            let formattedHtml = '';
+            
+            // Build custom UI elements based on agent response
+            if (RENDERERS[agentId]) {
+                try {
+                    formattedHtml = RENDERERS[agentId](result);
+                } catch (e) {
+                    console.error("Render failed for agent: " + agentId, e);
+                    formattedHtml = `<p style="font-size:13px; color: var(--text-secondary);">Structure loaded successfully. View raw JSON for exact data properties.</p>`;
+                }
+            } else {
+                formattedHtml = `<p style="font-size:13px; color: var(--text-secondary);">Structure loaded successfully. View raw JSON for exact data properties.</p>`;
+            }
+
+            body.innerHTML = `
+                <div class="formatted-view" id="formatted-${agentId}">
+                    ${formattedHtml}
+                </div>
+                <div class="raw-json-view-container" id="raw-${agentId}" style="display: none;">
+                    <div class="terminal-header-bar">
+                        <div class="terminal-btn close-btn"></div>
+                        <div class="terminal-btn minimize-btn"></div>
+                        <div class="terminal-btn expand-btn"></div>
+                        <span class="terminal-title">${agentId}_output.json</span>
+                    </div>
+                    <pre class="raw-json-view-code"><code>${highlightJson(result)}</code></pre>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

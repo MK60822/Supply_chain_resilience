@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+groq
+google-genai
+python-dotenv
+pydantic
+networkx
+scikit-learn
+tensorflow
